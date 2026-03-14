@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>HealthCare Pro - Smart Hospital</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+
+<div class="container" id="loginContainer">
+
+<div class="login-box">
+
+<h2>HealthCare Pro Login</h2>
+
+<select id="role">
+<option>User Login</option>
+<option>Doctor Login</option>
+<option>Admin Login</option>
+</select>
+
+<input type="text" id="username" placeholder="Username">
+
+<input type="password" id="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+</div>
+
+
+
+<!-- DASHBOARD -->
+
+<div class="dashboard" id="dashboard">
+
+<div class="sidebar">
+
+<h2>Dashboard</h2>
+
+<ul>
+
+<li onclick="scrollToSection('appointment')">Appointments</li>
+
+<li onclick="scrollToSection('doctors')">Doctors</li>
+
+<li onclick="scrollToSection('blood')">Blood Bank</li>
+
+<li onclick="scrollToSection('beds')">Beds</li>
+
+<li onclick="scrollToSection('ambulance')">Ambulance</li>
+
+<li onclick="logout()">Logout</li>
+
+</ul>
+
+<hr>
+
+<p><b>Hospital:</b> Apollo SmartCare Hospital</p>
+<p><b>Address:</b> 42 MG Road, Bengaluru</p>
+<p><b>Phone:</b> +91 98765 43210</p>
+
+</div>
+
+
+
+<div class="main">
+
+
+<!-- APPOINTMENT -->
+
+<div class="card" id="appointment">
+
+<h3>Book Appointment</h3>
+
+<form id="appointmentForm">
+
+<input type="text" id="patientName" placeholder="Patient Name" required>
+
+<input type="number" id="patientAge" placeholder="Age" required>
+
+<select id="doctorSelect" required></select>
+
+<input type="date" required>
+
+<select required>
+<option value="">Payment Mode</option>
+<option>UPI</option>
+<option>NEFT</option>
+<option>Credit Card</option>
+</select>
+
+<button type="submit">Book & Pay</button>
+
+</form>
+
+</div>
+
+
+
+<!-- DOCTORS -->
+
+<div class="card" id="doctors">
+
+<h3 id="doctorTitle">Our Specialists</h3>
+
+<div class="doctor-grid" id="doctorGrid"></div>
+
+</div>
+
+
+
+<!-- BLOOD BANK -->
+
+<div class="card" id="blood">
+
+<h3>Blood Bank</h3>
+
+<div id="bloodBank"></div>
+
+</div>
+
+
+
+<!-- BED STATUS -->
+
+<div class="card" id="beds">
+
+<h3>Bed Status</h3>
+
+<div id="bedSection"></div>
+
+</div>
+
+
+
+<!-- AMBULANCE -->
+
+<div class="card" id="ambulance">
+
+<h3>Emergency Ambulance Tracking</h3>
+
+<button onclick="requestAmbulance()">Request Ambulance</button>
+
+<div id="status"></div>
+
+<br>
+
+<iframe
+width="100%"
+height="350"
+style="border:0;border-radius:10px"
+loading="lazy"
+allowfullscreen
+src="https://maps.google.com/maps?q=apollo%20hospital%20bangalore&t=&z=13&ie=UTF8&iwloc=&output=embed">
+</iframe>
+
+</div>
+<!-- DATA ANALYTICS -->
+
+<div class="card" id="analytics">
+
+<h3>Hospital Data Analytics Dashboard</h3>
+
+<div style="width:100%; max-width:1200px; margin:auto;">
+
+<iframe
+src="https://public.tableau.com/views/Healthcareanalytics_17732438643160/analyticsdashboard?:embed=y&:showVizHome=no&:tabs=no"
+width="100%"
+height="850"
+frameborder="0"
+allowfullscreen>
+</iframe>
+
+</div>
+
+
+
+</div>
+</div>
+
+
+
+<script>
+
+
+let currentRole="";
+
+let icuBeds=3;
+let generalBeds=10;
+
+
+
+/* DOCTOR DATA */
+
+let doctors=[];
+
+const names=[
+"Smith","John","Sarah","Mike","Emily","Robert","Lisa","Kevin","Anna","James",
+"Maria","Steven","Chloe","Brian","Jessica","David","Sophia","Daniel","Olivia","William"
+];
+
+const specs=[
+"Cardiologist","Orthopedic","Neurologist","Pediatrician","Dermatologist",
+"Gastroenterologist","Gynecologist","Ophthalmologist","Psychiatrist","Urologist",
+"Endocrinologist","Oncologist","ENT Specialist","Pulmonologist","Dentist",
+"Nephrologist","Rheumatologist","Surgeon","Nutritionist","Physiotherapy"
+];
+
+for(let i=0;i<20;i++){
+
+doctors.push({
+name:"Dr. "+names[i],
+spec:specs[i],
+fee:500+50*i,
+timing:"Mon-Sat (9AM-5PM)",
+present:true,
+img:"https://i.pravatar.cc/150?u="+i
+});
+
+}
+
+
+
+/* LOGIN */
+
+function login(){
+
+let username=document.getElementById("username").value;
+let password=document.getElementById("password").value;
+let role=document.getElementById("role").value;
+
+if(username!=="" && password!==""){
+
+currentRole=role;
+
+document.getElementById("loginContainer").style.display="none";
+document.getElementById("dashboard").style.display="block";
+
+initDoctors();
+renderDoctors();
+renderBlood();
+renderBeds();
+
+}
+
+else{
+
+alert("Enter username and password");
+
+}
+
+}
+
+
+
+function logout(){
+location.reload();
+}
+
+
+
+function scrollToSection(id){
+document.getElementById(id).scrollIntoView({behavior:"smooth"});
+}
+
+
+
+/* DOCTOR DROPDOWN */
+
+function initDoctors(){
+
+let doctorSelect=document.getElementById("doctorSelect");
+
+doctorSelect.innerHTML="<option value=''>Select Doctor</option>";
+
+doctors.forEach((d,i)=>{
+
+doctorSelect.innerHTML+=`
+<option value="${i}">
+${d.name} (${d.spec}) - ₹${d.fee}
+</option>`;
+
+});
+
+}
+
+
+
+/* RENDER DOCTORS */
+
+function renderDoctors(){
+
+let doctorGrid=document.getElementById("doctorGrid");
+
+doctorGrid.innerHTML="";
+
+let available=0;
+
+doctors.forEach((d,i)=>{
+
+if(d.present) available++;
+
+doctorGrid.innerHTML+=`
+
+<div class="doctor-card">
+
+<img src="${d.img}">
+
+<h4>${d.name}</h4>
+
+<p>${d.spec}</p>
+
+<p>Fee: ₹${d.fee}</p>
+
+<p>Timing: ${d.timing}</p>
+
+<p class="${d.present?'green':'red'}">
+${d.present?'Present':'Unavailable'}
+</p>
+
+${currentRole==="Admin Login" ?
+`<button onclick="toggleDoctor(${i})">Toggle</button>`
+:""}
+
+</div>
+
+`;
+
+});
+
+document.getElementById("doctorTitle").innerText="Our Specialists ("+available+" Available)";
+
+}
+
+
+
+function toggleDoctor(i){
+
+doctors[i].present=!doctors[i].present;
+
+renderDoctors();
+
+}
+
+
+
+/* APPOINTMENT */
+
+document.getElementById("appointmentForm").addEventListener("submit",function(e){
+
+e.preventDefault();
+
+alert("Appointment Booked Successfully");
+
+this.reset();
+
+});
+
+
+
+/* BLOOD BANK */
+
+let bloodGroups=[
+{type:"A+",status:true},
+{type:"A-",status:true},
+{type:"B+",status:true},
+{type:"B-",status:true},
+{type:"O+",status:true},
+{type:"O-",status:true},
+{type:"AB+",status:true},
+{type:"AB-",status:true}
+];
+
+function renderBlood(){
+
+let bloodBank=document.getElementById("bloodBank");
+
+bloodBank.innerHTML="";
+
+bloodGroups.forEach((b,i)=>{
+
+bloodBank.innerHTML+=`
+
+${b.type} :
+<span class="${b.status?'green':'red'}">
+${b.status?'Available':'Not Available'}
+</span>
+
+${currentRole==="Admin Login" ?
+`<button onclick="toggleBlood(${i})">Toggle</button>`
+:""}
+
+<br>
+
+`;
+
+});
+
+}
+
+function toggleBlood(i){
+
+bloodGroups[i].status=!bloodGroups[i].status;
+
+renderBlood();
+
+}
+
+
+
+/* BED MANAGEMENT */
+
+function renderBeds(){
+
+let bedSection=document.getElementById("bedSection");
+
+bedSection.innerHTML=`
+
+ICU Beds: ${icuBeds}
+
+${currentRole==="Admin Login" ?
+` <button onclick="changeBed('icu',1)">+</button>
+<button onclick="changeBed('icu',-1)">-</button>` : ""}
+
+<br><br>
+
+General Beds: ${generalBeds}
+
+${currentRole==="Admin Login" ?
+` <button onclick="changeBed('gen',1)">+</button>
+<button onclick="changeBed('gen',-1)">-</button>` : ""}
+
+`;
+
+}
+
+function changeBed(type,value){
+
+if(type==="icu"){
+icuBeds=Math.max(0,icuBeds+value);
+}
+else{
+generalBeds=Math.max(0,generalBeds+value);
+}
+
+renderBeds();
+
+}
+
+
+
+/* AMBULANCE */
+
+function requestAmbulance(){
+
+document.getElementById("status").innerHTML="Ambulance Dispatched Successfully";
+
+}
+
+</script>
+
+</body>
+</html>
